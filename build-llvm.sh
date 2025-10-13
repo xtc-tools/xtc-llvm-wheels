@@ -3,17 +3,38 @@ set -euo pipefail
 set -x
 dir="$(realpath -e "$(dirname "$0")")"
 
+# dump env
+env
+
+BUILD_DIR="${1-llvm-project/build}"
+INSTALL_DIR="${2-$dir/install}"
+
 BUILD_LLVM_CLEAN_BUILD_DIR="${BUILD_LLVM_CLEAN_BUILD_DIR:-1}"
+BUILD_LLVM_CLEAN_BUILD_DIR_POST="${BUILD_LLVM_CLEAN_BUILD_DIR_POST:-0}"
+BUILD_LLVM_CCACHE="${BUILD_LLVM_CCACHE:-1}"
 LLVM_TARGETS_TO_BUILD="${LLVM_TARGETS_TO_BUILD-AArch64;ARM;X86}"
 LLVM_BUILD_TOOLS="${LLVM_BUILD_TOOLS:-ON}"
 
-cd llvm-project
+LLVM_BUILD_TYPE="Release" # "MinSizeRel"
+
+CCACHE_OPTS=""
+[ "$BUILD_LLVM_CCACHE" != 1 ] || \
+    CCACHE_OPTS="-DLLVM_CCACHE_BUILD=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+
+[ "$BUILD_LLVM_CLEAN_BUILD_DIR" != 1 ] || rm -rf "$BUILD_DIR"
+
+rm -rf "$INSTALL_DIR"
+mkdir -p "$INSTALL_DIR"
+mkdir -p "$BUILD_DIR"
+
+cd "$BUILD_DIR"
 
 mkdir build
 cmake \
-    -DCMAKE_INSTALL_PREFIX="$dir"/install \
+    -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
     -DLLVM_ENABLE_PROJECTS="" \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE="$LLVM_BUILD_TYPE" \
+    -DLLVM_ENABLE_ASSERTIONS=ON \
     -DLLVM_ENABLE_WARNINGS=OFF \
     -DLLVM_PARALLEL_LINK_JOBS=1 \
     -DCMAKE_PLATFORM_NO_VERSIONED_SONAME=ON \
@@ -34,12 +55,14 @@ cmake \
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DLLVM_INCLUDE_EXAMPLES=OFF \
     -DLLVM_INCLUDE_TESTS=OFF \
+    $CCACHE_OPTS \
     -Wno-dev \
     -Wno-deprecated \
     -G Ninja \
-    -B build llvm
+    "$dir"/llvm-project/llvm
 
-ninja -C build
-ninja -C build install
+ninja
+ninja install
 
-[ "$BUILD_LLVM_CLEAN_BUILD_DIR" != 1 ] || rm -rf build
+cd "$dir"
+[ "$BUILD_LLVM_CLEAN_BUILD_DIR_POST" != 1 ] || rm -rf "$BUILD_DIR"

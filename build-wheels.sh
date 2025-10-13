@@ -3,9 +3,21 @@ set -euo pipefail
 set -x
 dir="$(realpath -e "$(dirname "$0")")"
 
-BUILD_LLVM_CLEAN_BUILD_DIR="${BUILD_LLVM_CLEAN_BUILD_DIR:-1}"
+BUILD_LLVM_REVISION="$(cat "$dir"/llvm_revision.txt)"
 
 cd "$dir"
+DOCKER_ARGS=""
+DOCKER_CCACHE_DIR=""
+if [ -n "$BUILD_CCACHE_DIR-}" ]; then
+    mkdir -p "$BUILD_CCACHE_DIR"
+    DOCKER_CCACHE_DIR="/ccache"
+    DOCKER_ARGS="$DOCKER_ARGS -v'$BUILD_CCACHE_DIR:$DOCKER_CCACHE_DIR'"
+fi
+CIBW_CONTAINER_ENGINE="docker;create_args:$DOCKER_ARGS"
+
+BUILD_LLVM_CLEAN_BUILD_DIR="${BUILD_LLVM_CLEAN_BUILD_DIR:-1}"
+CIBW_DEBUG_KEEP_CONTAINER="${CIBW_DEBUG_KEEP_CONTAINER:-0}"
+
 
 # Note: we build only cp310-manylinux because the genrated package
 # is not python version/abi dependent, only platform dependent,
@@ -18,12 +30,14 @@ env \
     CIBW_BUILD='cp310-manylinux*' \
     CIBW_PROJECT_REQUIRES_PYTHON='>=3.10' \
     CIBW_MANYLINUX_X86_64_IMAGE='manylinux_2_28' \
+    CIBW_CONTAINER_ENGINE="$CIBW_CONTAINER_ENGINE" \
     CIBW_BEFORE_ALL='./install-build-tools.sh && ./build-llvm.sh' \
     CIBW_TEST_COMMAND='{package}/test-installed.sh' \
     BUILD_LLVM_CLEAN_BUILD_DIR="$BUILD_LLVM_CLEAN_BUILD_DIR" \
-    CIBW_ENVIRONMENT_PASS_LINUX="BUILD_LLVM_CLEAN_BUILD_DIR" \
+    BUILD_LLVM_REVISION="$BUILD_LLVM_REVISION" \
+    CCACHE_DIR="$DOCKER_CCACHE_DIR" \
+    CIBW_ENVIRONMENT_PASS_LINUX="BUILD_LLVM_CLEAN_BUILD_DIR BUILD_LLVM_REVISION CCACHE_DIR" \
+    CIBW_BUILD_VERBOSITY=1 \
+    CIBW_DEBUG_KEEP_CONTAINER="$CIBW_DEBUG_KEEP_CONTAINER" \
     cibuildwheel \
     .
-
-#    CIBW_DEBUG_KEEP_CONTAINER=1 \
-#    CIBW_BUILD_VERBOSITY=1 \
