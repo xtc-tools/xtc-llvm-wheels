@@ -3,8 +3,8 @@ from setuptools import setup
 from setuptools.dist import Distribution
 from setuptools.command.bdist_wheel import bdist_wheel
 
-
-PACKAGE_VERSION = "19.1.7.2025011201+cd708029"
+PACKAGE_NAME = "llvm"
+PACKAGE_VERSION = "21.1.2.2025091601+b708aea0"
 
 class BinaryDistribution(Distribution):
     """Distribution which always forces a binary package with platform name"""
@@ -27,14 +27,14 @@ if __name__ == "__main__":
 
     # Create the binary distribution
     setup(
-        name = "llvm",
+        name = PACKAGE_NAME,
         version = PACKAGE_VERSION,
         description = "Python packaging for llvm and llvm dev files",
         maintainer="Christophe Guillon",
         maintainer_email="christophe.guillon@inria.fr",
         python_requires = ">= 3.10",
-        packages = ["llvm"],
-        package_dir = {"llvm": "install"},
+        packages = [PACKAGE_NAME],
+        package_dir = {PACKAGE_NAME: "install"},
         include_package_data = True,
         distclass=BinaryDistribution,
         cmdclass={
