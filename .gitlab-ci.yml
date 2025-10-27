@@ -1,4 +1,9 @@
-default:
+variables:
+  TWINE_USERNAME: gitlab-ci-token
+  TWINE_PASSWORD: $CI_JOB_TOKEN
+  REPOSITORY_URL: $CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/pypi
+
+linux:
   image: python:3.12
   # Allocate large shared (4xCPU 8GB)
   tags:
@@ -11,18 +16,30 @@ default:
     - python --version
     - pip list
     - curl -sSL https://get.docker.com/ | sh
-
-variables:
-  TWINE_USERNAME: gitlab-ci-token
-  TWINE_PASSWORD: $CI_JOB_TOKEN
-  REPOSITORY_URL: $CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/pypi
-
-
-linux:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG =~ /^llvm-v/
   script:
+    - python -m pip install -r requirements.txt
+    - ./checkout-llvm.sh
+    - ./build-wheels.sh
+    - twine upload --repository-url $REPOSITORY_URL --skip-existing wheelhouse/*.whl
+  artifacts:
+    paths:
+      - wheelhouse/
+
+macos:
+  tags:
+    - macos-baremetal-applem4
+  variables:
+    BUILD_PLATFORM: "darwin"
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^llvm-v/
+  script:
+    - export PATH="/opt/homebrew/bin:$PATH"
+    - python3.12 -m venv .venv
+    - source .venv/bin/activate
     - python -m pip install -r requirements.txt
     - ./checkout-llvm.sh
     - ./build-wheels.sh
