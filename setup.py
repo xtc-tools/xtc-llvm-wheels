@@ -4,7 +4,7 @@ from setuptools.dist import Distribution
 from setuptools.command.bdist_wheel import bdist_wheel
 
 
-PACKAGE_VERSION = "19.1.7.2025011201+cd708029+rev1"
+PACKAGE_VERSION = "19.1.7.2025011201+cd708029rev1"
 
 class BinaryDistribution(Distribution):
     """Distribution which always forces a binary package with platform name"""
