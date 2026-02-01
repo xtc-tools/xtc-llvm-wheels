@@ -2,6 +2,11 @@
 set -euo pipefail
 set -x
 
+# suppose tools already installed on MacOS
+if [ "$BUILD_PLATFORM" = "darwin" ]; then
+    exit 0
+fi
+
 INSTALL_PREFIX="${INSTALL_PREFIX:-/usr/local}"
 CCACHE_VERSION=4.10.2
 CCACHE_URL="https://github.com/ccache/ccache/releases/download/v$CCACHE_VERSION/ccache-$CCACHE_VERSION-linux-x86_64.tar.xz"
