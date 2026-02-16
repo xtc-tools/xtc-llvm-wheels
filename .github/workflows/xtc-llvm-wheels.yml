@@ -1,0 +1,49 @@
+name: XTC LLVM Wheels Build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: pip
+      - name: Display Python version
+        run: |
+          python -c "import sys; print(sys.version)"
+          pip list
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: PIP Cache
+        uses: actions/cache@v2
+        with:
+          path: /pip_cache
+          key: ${{ runner.os }}-pip-cache
+      - name: CCache Cache
+        uses: actions/cache@v2
+        with:
+          path: /ccache
+          key: ${{ runner.os }}-ccache
+      - name: Checkout LLVM
+        run: |
+          ./checkout-llvm.sh
+      - name: Build Wheels
+        run: |
+          export BUILD_PIP_CACHE_DIR=/pip_cache
+          export BUILD_CCACHE_DIR=/ccache
+          ./build-wheels.sh
