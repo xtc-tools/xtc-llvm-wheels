@@ -1,4 +1,4 @@
-name: XTC LLVM Wheels Build
+name: XTC LLVM Tools Wheels Build
 
 on:
   push:
@@ -11,13 +11,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04, macos-14]
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
@@ -30,20 +30,29 @@ jobs:
         run: |
           pip install -r requirements.txt
       - name: PIP Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
-          path: /pip_cache
+          path: ~/pip_cache
           key: ${{ runner.os }}-pip-cache
       - name: CCache Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
-          path: /ccache
+          path: ~/ccache
           key: ${{ runner.os }}-ccache
       - name: Checkout LLVM
         run: |
           ./checkout-llvm.sh
+      - name: Install macOS Brew Packages
+        if: runner.os == 'macOs'
+        run: |
+          brew install ccache
       - name: Build Wheels
         run: |
-          export BUILD_PIP_CACHE_DIR=/pip_cache
-          export BUILD_CCACHE_DIR=/ccache
+          export BUILD_PIP_CACHE_DIR=$HOME/pip_cache
+          export BUILD_CCACHE_DIR=$HOME/ccache
           ./build-wheels.sh
+      - name: Store distribution packages
+        uses: actions/upload-artifact@v5
+        with:
+          name: python-package-xtc-llvm-tools-${{ runner.os }}
+          path: wheelhouse/
