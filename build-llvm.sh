@@ -4,7 +4,7 @@ set -x
 dir="$(dirname "$(readlink -f "$0")")"
 
 # dump env
-env
+env | sort
 
 BUILD_DIR="${1-llvm-project/build}"
 INSTALL_DIR="${2-$dir/install}"
