@@ -3,7 +3,7 @@ from setuptools import setup
 from setuptools.dist import Distribution
 from setuptools.command.bdist_wheel import bdist_wheel
 
-PACKAGE_NAME = "llvm"
+PACKAGE_NAME = "xtc-llvm-tools"
 PACKAGE_VERSION = "21.1.2.2025091603+b708aea0"
 
 class BinaryDistribution(Distribution):
@@ -33,8 +33,8 @@ if __name__ == "__main__":
         maintainer="Christophe Guillon",
         maintainer_email="christophe.guillon@inria.fr",
         python_requires = ">= 3.10",
-        packages = [PACKAGE_NAME],
-        package_dir = {PACKAGE_NAME: "install"},
+        packages = ["llvm"],
+        package_dir = {"llvm": "install"},
         include_package_data = True,
         distclass=BinaryDistribution,
         cmdclass={
