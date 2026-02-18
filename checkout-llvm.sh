@@ -14,8 +14,10 @@ git reset --hard FETCH_HEAD
 git submodule init
 git submodule update --recursive --depth 1
 
+# Apply patches with git and reset to fetched revision
 if [ -d "$dir"/patches/llvm ]; then
     for patch in "$dir"/patches/llvm/*.patch; do
-        patch -p1 -i "$patch"
+        git am "$patch"
     done
 fi
+git reset FETCH_HEAD
