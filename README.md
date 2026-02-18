@@ -53,11 +53,10 @@ Then install dependencies for the build script:
 
 Update the version for LLVM:
 - in `llvm_revision.txt`: put the full sha1 of the new revision to publish
-- in `setup.py`: update the variable `PACKAGE_VERSION = "vx.y.z.YYYMMDDXX+<sha1[:8]>"`
-  where `sha1[:8]` is the first 8 bytes of the revision above, and `vx.y.z` is the
-  LLVM last tag for this revision. The `YYYMMDD` date tag should be the commit date
-  of the LLVM revision. The 'XX' part is actually the part identifying the revision
-  of the wheel, should start by 01 at each new LLVM revision.
+- in `setup.py`: update the variable `PACKAGE_VERSION = "vx.y.z.X>"`
+  where `vx.y.z` is the LLVM last tag for this revision.
+  The 'X' part is actually the part identifying the revision of the wheel,
+  should start by 1 at each new LLVM revision.
 
 Then run the cibuildwheel which will create the wheels to install in `wheelhouse/`:
 

@@ -4,7 +4,7 @@ from setuptools.dist import Distribution
 from setuptools.command.bdist_wheel import bdist_wheel
 
 PACKAGE_NAME = "xtc-llvm-tools"
-PACKAGE_VERSION = "21.1.2.2025091603+b708aea0"
+PACKAGE_VERSION = "21.1.2.4"
 
 class BinaryDistribution(Distribution):
     """Distribution which always forces a binary package with platform name"""
