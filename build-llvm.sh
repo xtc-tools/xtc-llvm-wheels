@@ -66,5 +66,13 @@ cmake \
 ninja
 ninja install
 
+if [ -d "$INSTALL_DIR"/lib ]; then
+    # remove useless so links
+    find "$INSTALL_DIR"/lib/ -type l -name '*.so' | xargs rm -f
+    find "$INSTALL_DIR"/lib/ -type l -name '*.dylib' | xargs rm -f
+    # remove useless .a files, distribute only shared lib version
+    find "$INSTALL_DIR"/lib/ -name '*.a' | xargs rm -f
+fi
+
 cd "$dir"
 [ "$BUILD_LLVM_CLEAN_BUILD_DIR_POST" != 1 ] || rm -rf "$BUILD_DIR"
