@@ -43,7 +43,7 @@ jobs:
         run: |
           ./checkout-llvm.sh
       - name: Install macOS Brew Packages
-        if: runner.os == 'macOs'
+        if: runner.os == 'macOS'
         run: |
           brew install ccache
       - name: Build Wheels
@@ -56,3 +56,25 @@ jobs:
         with:
           name: python-package-xtc-llvm-tools-${{ runner.os }}
           path: wheelhouse/
+
+  publish-to-testpypi:
+    needs: [build]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [Linux, macOS]
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/xtc-llvm-tools
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v6
+      with:
+        name: python-package-xtc-llvm-tools-${{ matrix.os }}
+        path: dist/
+    - name: Publish distribution to Test Pypi
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
