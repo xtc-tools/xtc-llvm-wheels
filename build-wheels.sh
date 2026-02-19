@@ -11,6 +11,7 @@ cd "$dir"
 # The setup.py script enforce the py3-none-manylinux* naming.
 
 BUILD_PLATFORM="${BUILD_PLATFORM:-$(uname -s | tr '[:upper:]' '[:lower:]')}"
+BUILD_PACKAGE="${BUILD_PACKAGE:-llvm-tools}"
 
 CIBW_PLATFORM="linux"
 CIBW_ARCHS="x86_64"
@@ -75,4 +76,4 @@ ENV_VARS=(
 
 env "${ENV_VARS[@]}" \
     cibuildwheel \
-    .
+    "$BUILD_PACKAGE"

@@ -7,7 +7,8 @@ dir="$(dirname "$(readlink -f "$0")")"
 env | sort
 
 BUILD_DIR="${1-llvm-project/build}"
-INSTALL_DIR="${2-$dir/install}"
+INSTALL_DIR="${2-$dir/llvm-tools/install}"
+INSTALL_DIR_DEV="${3-$dir/llvm-dev/install}"
 
 BUILD_LLVM_CLEAN_BUILD_DIR="${BUILD_LLVM_CLEAN_BUILD_DIR:-1}"
 BUILD_LLVM_CLEAN_BUILD_DIR_POST="${BUILD_LLVM_CLEAN_BUILD_DIR_POST:-0}"
@@ -28,8 +29,6 @@ mkdir -p "$INSTALL_DIR"
 mkdir -p "$BUILD_DIR"
 
 cd "$BUILD_DIR"
-
-COMPONENTS="-DLLVM_DISTRIBUTION_COMPONENTS=llvm-config;llvm-headers;opt;llc;LLVM"
 
 mkdir build
 cmake \
@@ -59,26 +58,28 @@ cmake \
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DLLVM_INCLUDE_EXAMPLES=OFF \
     -DLLVM_INCLUDE_TESTS=OFF \
-    $COMPONENTS \
     $CCACHE_OPTS \
     -Wno-dev \
     -Wno-deprecated \
     -G Ninja \
     "$dir"/llvm-project/llvm
 
-if [ -n "$COMPONENTS" ]; then
-    ninja distribution
-    ninja install-distribution
-else
-    ninja
-    ninja install
-fi
+ninja
+ninja install
 
 if [ -d "$INSTALL_DIR"/lib ]; then
     # remove useless so links
-    find "$INSTALL_DIR"/lib/ -type l -name '*.so' | xargs rm
-    find "$INSTALL_DIR"/lib/ -type l -name '*.dylib' | xargs rm
+    find "$INSTALL_DIR"/lib/ -type l -name '*.so' | xargs rm -f
+    find "$INSTALL_DIR"/lib/ -type l -name '*.dylib' | xargs rm -f
 fi
+
+mkdir -p "$INSTALL_DIR_DEV"
+mv "$INSTALL_DIR"/include "$INSTALL_DIR_DEV"/
+mkdir -p "$INSTALL_DIR_DEV"/lib
+mv "$INSTALL_DIR"/lib/*.a "$INSTALL_DIR_DEV"/lib/
+mv "$INSTALL_DIR"/lib/cmake "$INSTALL_DIR_DEV"/lib/
+mkdir -p "$INSTALL_DIR_DEV"/bin
+mv "$INSTALL_DIR"/bin/llvm-config "$INSTALL_DIR_DEV"/bin/
 
 cd "$dir"
 [ "$BUILD_LLVM_CLEAN_BUILD_DIR_POST" != 1 ] || rm -rf "$BUILD_DIR"

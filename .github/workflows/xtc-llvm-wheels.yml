@@ -1,4 +1,4 @@
-name: XTC LLVM Tools Wheels Build
+name: XTC LLVM tools and dev wheels build
 
 on:
   push:
@@ -11,6 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
+        pkg: [tools, dev]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
@@ -49,11 +50,11 @@ jobs:
         run: |
           export BUILD_PIP_CACHE_DIR=$HOME/pip_cache
           export BUILD_CCACHE_DIR=$HOME/ccache
-          ./build-wheels.sh
+          ./build-wheels-${{ matrix.pkg }}.sh
       - name: Store distribution packages
         uses: actions/upload-artifact@v5
         with:
-          name: python-package-xtc-llvm-tools-${{ runner.os }}
+          name: python-package-xtc-llvm-${{ matrix.pkg }}-${{ runner.os }}
           path: wheelhouse/
 
   publish-to-testpypi:
@@ -63,16 +64,17 @@ jobs:
       fail-fast: false
       matrix:
         os: [Linux, macOS]
+        pkg: [tools, dev]
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/xtc-llvm-tools
+      url: https://test.pypi.org/p/xtc-llvm-${{ matrix.pkg }}
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
     - name: Download all the dists
       uses: actions/download-artifact@v6
       with:
-        name: python-package-xtc-llvm-tools-${{ matrix.os }}
+        name: python-package-xtc-llvm-${{ matrix.pkg }}-${{ matrix.os }}
         path: dist/
     - name: Publish distribution to Test PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
@@ -88,16 +90,17 @@ jobs:
       fail-fast: false
       matrix:
         os: [Linux, macOS]
+        pkg: [tools, dev]
     environment:
       name: pypi
-      url: https://pypi.org/p/xtc-llvm-tools
+      url: https://pypi.org/p/xtc-llvm-${{ matrix.pkg }}
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
     - name: Download all the dists
       uses: actions/download-artifact@v6
       with:
-        name: python-package-xtc-llvm-tools-${{ matrix.os }}
+        name: python-package-xtc-llvm-${{ matrix.pkg }}-${{ matrix.os }}
         path: dist/
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
