@@ -4,7 +4,11 @@ from setuptools.dist import Distribution
 from setuptools.command.bdist_wheel import bdist_wheel
 
 PACKAGE_NAME = "xtc-llvm-tools"
-PACKAGE_VERSION = "21.1.2.5rc2"
+
+def get_version():
+    file = Path(__file__).parents[1] / "version.txt"
+    with open(file) as inf:
+        return inf.read().strip()
 
 class BinaryDistribution(Distribution):
     """Distribution which always forces a binary package with platform name"""
@@ -28,8 +32,8 @@ if __name__ == "__main__":
     # Create the binary distribution
     setup(
         name = PACKAGE_NAME,
-        version = PACKAGE_VERSION,
-        description = "Python packaging for llvm and llvm dev files",
+        version = get_version(),
+        description = "Python packaging for llvm tools files",
         maintainer="Christophe Guillon",
         maintainer_email="christophe.guillon@inria.fr",
         python_requires = ">= 3.10",
