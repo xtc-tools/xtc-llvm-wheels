@@ -8,6 +8,8 @@ LLVM_REVISION="$(cat "$dir"/llvm_revision.txt)"
 mkdir -p llvm-project
 cd llvm-project
 git init
+git config --local user.email "CIBOT@noreply.com"
+git config --local user.name "CI BOT"
 git remote add origin https://github.com/llvm/llvm-project
 git fetch --depth 1 origin "$LLVM_REVISION"
 git reset --hard FETCH_HEAD
