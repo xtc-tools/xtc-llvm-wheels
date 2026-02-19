@@ -1,8 +1,11 @@
 # LLVM Wheels
 
-This is a simple python package wrapper for prebuilt LLVM libraries.
+This is a simple python package wrapper for prebuilt LLVM tools/libraries and dev files
 
-The actual gitlab wheels can then be viewd from: https://gitlab.inria.fr/groups/CORSE/-/packages
+The actual wheels are available on pypi.org as:
+- xtc-llvm-tools : LLVM tools and shared libraries;
+- xtc-llvm-dev: LLVM dev include, archive and cmake files.
+
 
 ## Installing the LLVM wheels for some project
 
@@ -13,21 +16,21 @@ In a python environment setup for instance with:
     python3 -m venv .venv
     source .venv/bin/activate
 
-One can install the llvm libraries `19.1.*` with for instance:
+One can install the llvm libraries `21.1.2.*` with for instance:
 
-    pip3 install llvm~=19.1.0 \
-    -i https://gitlab.inria.fr/api/v4/projects/57611/packages/pypi/simple
+    pip3 install xtc-llvm-tools~=21.1.2.0 xtc-llvm-dev~=21.1.2.0 \
 
 Or one can add in a `requirements.txt` file for instance:
 
-    --extra-index-url https://gitlab.inria.fr/api/v4/projects/57611/packages/pypi/simple
-    llvm~=19.1.0
+    xtc-llvm-tools~=21.1.2.0
+    xtc-llvm-dev~=21.1.2.0
 
 And run:
 
     pip3 install -r requirements.txt
     ...
-    Successfully installed llvm-19.1.7.2025011201+cd708029
+    Successfully installed xtc-llvm-tools-21.1.2.5
+    Successfully installed xtc-llvm-dev-21.1.2.5
 
 ## Using llvm installed tools
 
@@ -35,7 +38,7 @@ To get the path to llvm tools, for instance run `llvm-config`:
 
     LLVM_PREFIX=$(python -c 'import llvm;print(llvm.__path__[0])')
     $LLVM_PREFIX/bin/llvm-config --version
-    14.0.6
+    21.1.2
 
 ## Maintenance
 
@@ -53,18 +56,19 @@ Then install dependencies for the build script:
 
 Update the version for LLVM:
 - in `llvm_revision.txt`: put the full sha1 of the new revision to publish
-- in `setup.py`: update the variable `PACKAGE_VERSION = "vx.y.z.X>"`
-  where `vx.y.z` is the LLVM last tag for this revision.
+- in `version.txt`: update the content `x.y.z.X`
+  where `x.y.z` is the LLVM last tag for this revision.
   The 'X' part is actually the part identifying the revision of the wheel,
   should start by 1 at each new LLVM revision.
 
 Then run the cibuildwheel which will create the wheels to install in `wheelhouse/`:
 
      ./checkout-llvm.sh
-     ./build-wheels.sh
+     ./build-wheels-tools.sh
+     ./build-wheels-dev.sh
 
-Once built, one may publish to the project repository with:
+Once built, one may publish to some pypi repository with (here `test.pypi.org`):
 
     python -m twine upload -u '<user>' -p '<token>' \
-    --repository-url https://gitlab.inria.fr/api/v4/projects/57611/packages/pypi \
+    --repository-url https://test.pypi.org/legacy/ \
     wheelhouse/*.whl
