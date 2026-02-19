@@ -29,6 +29,8 @@ mkdir -p "$BUILD_DIR"
 
 cd "$BUILD_DIR"
 
+COMPONENTS="-DLLVM_DISTRIBUTION_COMPONENTS=llvm-config;llvm-headers;opt;llc;LLVM"
+
 mkdir build
 cmake \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
@@ -57,21 +59,25 @@ cmake \
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DLLVM_INCLUDE_EXAMPLES=OFF \
     -DLLVM_INCLUDE_TESTS=OFF \
+    $COMPONENTS \
     $CCACHE_OPTS \
     -Wno-dev \
     -Wno-deprecated \
     -G Ninja \
     "$dir"/llvm-project/llvm
 
-ninja
-ninja install
+if [ -n "$COMPONENTS" ]; then
+    ninja distribution
+    ninja install-distribution
+else
+    ninja
+    ninja install
+fi
 
 if [ -d "$INSTALL_DIR"/lib ]; then
     # remove useless so links
-    find "$INSTALL_DIR"/lib/ -type l -name '*.so' | xargs rm -f
-    find "$INSTALL_DIR"/lib/ -type l -name '*.dylib' | xargs rm -f
-    # remove useless .a files, distribute only shared lib version
-    find "$INSTALL_DIR"/lib/ -name '*.a' | xargs rm -f
+    find "$INSTALL_DIR"/lib/ -type l -name '*.so' | xargs rm
+    find "$INSTALL_DIR"/lib/ -type l -name '*.dylib' | xargs rm
 fi
 
 cd "$dir"

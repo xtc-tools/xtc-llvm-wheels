@@ -1,0 +1,54 @@
+From 934029b9365333944d5afc6a029bff87a08d15bb Mon Sep 17 00:00:00 2001
+From: Christophe Guillon <christophe.guillon@inria.fr>
+Date: Thu, 19 Feb 2026 16:42:44 +0100
+Subject: [PATCH] llvm-config: return non versionned so name
+
+---
+ llvm/tools/llvm-config/llvm-config.cpp | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/llvm/tools/llvm-config/llvm-config.cpp b/llvm/tools/llvm-config/llvm-config.cpp
+index 49df8fdcb..f09a7c034 100644
+--- a/llvm/tools/llvm-config/llvm-config.cpp
++++ b/llvm/tools/llvm-config/llvm-config.cpp
+@@ -387,7 +387,8 @@ int main(int argc, char **argv) {
+   const Triple HostTriple(Triple::normalize(LLVM_HOST_TRIPLE));
+   if (HostTriple.isOSWindows()) {
+     SharedExt = "dll";
+-    SharedVersionedExt = LLVM_DYLIB_VERSION ".dll";
++    //SharedVersionedExt = "-" LLVM_DYLIB_VERSION ".dll";
++    SharedVersionedExt = ".dll";
+     if (HostTriple.isOSCygMing()) {
+       SharedPrefix = LLVM_SHARED_LIBRARY_PREFIX;
+       StaticExt = "a";
+@@ -406,14 +407,16 @@ int main(int argc, char **argv) {
+     StaticDir = ActiveLibDir;
+   } else if (HostTriple.isOSDarwin()) {
+     SharedExt = "dylib";
+-    SharedVersionedExt = LLVM_DYLIB_VERSION ".dylib";
++    //SharedVersionedExt = "-" LLVM_DYLIB_VERSION ".dylib";
++    SharedVersionedExt = ".dylib";
+     StaticExt = "a";
+     StaticDir = SharedDir = ActiveLibDir;
+     StaticPrefix = SharedPrefix = "lib";
+   } else {
+     // default to the unix values:
+     SharedExt = "so";
+-    SharedVersionedExt = LLVM_DYLIB_VERSION ".so";
++    //SharedVersionedExt = "-" LLVM_DYLIB_VERSION ".so";
++    SharedVersionedExt = ".so";
+     StaticExt = "a";
+     StaticDir = SharedDir = ActiveLibDir;
+     StaticPrefix = SharedPrefix = "lib";
+@@ -426,7 +429,7 @@ int main(int argc, char **argv) {
+ 
+   bool DyLibExists = false;
+   const std::string DyLibName =
+-      (SharedPrefix + "LLVM-" + SharedVersionedExt).str();
++      (SharedPrefix + "LLVM" + SharedVersionedExt).str();
+ 
+   // If LLVM_LINK_DYLIB is ON, the single shared library will be returned
+   // for "--libs", etc, if they exist. This behaviour can be overridden with
+-- 
+2.52.0
+
