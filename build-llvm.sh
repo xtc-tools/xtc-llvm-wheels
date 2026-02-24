@@ -77,8 +77,6 @@ mv "$INSTALL_DIR"/include "$INSTALL_DIR_DEV"/
 mkdir -p "$INSTALL_DIR_DEV"/lib
 mv "$INSTALL_DIR"/lib/*.a "$INSTALL_DIR_DEV"/lib/
 mv "$INSTALL_DIR"/lib/cmake "$INSTALL_DIR_DEV"/lib/
-mkdir -p "$INSTALL_DIR_DEV"/bin
-mv "$INSTALL_DIR"/bin/llvm-config "$INSTALL_DIR_DEV"/bin/
 
 cd "$dir"
 [ "$BUILD_LLVM_CLEAN_BUILD_DIR_POST" != 1 ] || rm -rf "$BUILD_DIR"
