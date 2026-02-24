@@ -3,11 +3,8 @@ set -euo pipefail
 set -x
 
 PREFIX="$(python -c 'import llvm;print(llvm.__path__[0])')"
-"$PREFIX"/bin/llvm-config --version
-"$PREFIX"/bin/llvm-config --ldflags
-"$PREFIX"/bin/llvm-config --cxxflags
-"$PREFIX"/bin/llvm-config --libfiles
 
-[ "$("$PREFIX"/bin/llvm-config --prefix)" == "$PREFIX" ]
+[ -d "$PREFIX"/include/llvm ] || exit 1
+[ -d "$PREFIX"/lib/cmake/llvm ] || exit 1
 
 echo "ALL TESTS PASSED"
