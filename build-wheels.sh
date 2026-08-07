@@ -13,10 +13,12 @@ cd "$dir"
 BUILD_PLATFORM="${BUILD_PLATFORM:-$(uname -s | tr '[:upper:]' '[:lower:]')}"
 BUILD_PACKAGE="${BUILD_PACKAGE:-llvm-tools}"
 
+BUILD_ARCH="${BUILD_ARCH:-$(uname -m)}"
+
 CIBW_PLATFORM="linux"
-CIBW_ARCHS="x86_64"
 CIBW_BUILD="cp310-manylinux*"
 CIBW_MANYLINUX_IMAGE="manylinux_2_28"
+CIBW_MANYLINUX_ENV_NAME="CIBW_MANYLINUX_X86_64_IMAGE"
 
 BUILD_VERBOSITY="${BUILD_VERBOSITY:-0}"
 BUILD_LLVM_CLEAN_BUILD_DIR="${BUILD_LLVM_CLEAN_BUILD_DIR:-1}"
@@ -28,17 +30,23 @@ CIBW_BEFORE_BUILD="rm -rf dist build *egg-info"
 CIBW_TEST_COMMAND="{package}/test-installed.sh"
 CIBW_BEFORE_ALL="./install-build-tools.sh && ./build-llvm.sh"
 
-CIBW_REPAIR_WHEEL_COMMAND_LINUX=""
-CIBW_REPAIR_WHEEL_COMMAND_MACOS=""
-if [ "$BUILD_PACKAGE" = "llvm-dev" ]; then
-    # No binary to repair, trick wheel name for right platform version anyway
-    CIBW_REPAIR_WHEEL_COMMAND_LINUX='cp {wheel} {dest_dir}/`basename {wheel} -linux_x86_64.whl`-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl'
-    CIBW_REPAIR_WHEEL_COMMAND_MACOS='cp {wheel} {dest_dir}/'
-fi
-
 MACOSX_DEPLOYMENT_ARGS=""
 CONTAINER_ENGINE_ARG=""
 if [ "$BUILD_PLATFORM" = "linux" ]; then
+    case "$BUILD_ARCH" in
+        x86_64|amd64)
+            CIBW_ARCHS="x86_64"
+            CIBW_MANYLINUX_ENV_NAME="CIBW_MANYLINUX_X86_64_IMAGE"
+            ;;
+        aarch64|arm64)
+            CIBW_ARCHS="aarch64"
+            CIBW_MANYLINUX_ENV_NAME="CIBW_MANYLINUX_AARCH64_IMAGE"
+            ;;
+        *)
+            echo "Error: Unsupported Linux architecture '$BUILD_ARCH'. Must be 'x86_64' or 'aarch64'."
+            exit 1
+            ;;
+    esac
    DOCKER_ARGS=""
     if [ -n "$BUILD_PIP_CACHE_DIR" ]; then
         DOCKER_PIP_CACHE_DIR="/pip_cache"
@@ -62,12 +70,20 @@ else
     exit 1
 fi
 
+CIBW_REPAIR_WHEEL_COMMAND_LINUX=""
+CIBW_REPAIR_WHEEL_COMMAND_MACOS=""
+if [ "$BUILD_PACKAGE" = "llvm-dev" ]; then
+    # No binary to repair, trick wheel name for right platform version anyway
+    CIBW_REPAIR_WHEEL_COMMAND_LINUX='cp {wheel} {dest_dir}/`basename {wheel} -linux_'"$CIBW_ARCHS"'.whl`-manylinux_2_24_'"$CIBW_ARCHS"'.manylinux_2_28_'"$CIBW_ARCHS"'.whl'
+    CIBW_REPAIR_WHEEL_COMMAND_MACOS='cp {wheel} {dest_dir}/'
+fi
+
 ENV_VARS=(
     CIBW_PLATFORM="$CIBW_PLATFORM"
     CIBW_ARCHS="$CIBW_ARCHS"
     CIBW_BUILD="$CIBW_BUILD"
     CIBW_PROJECT_REQUIRES_PYTHON=">=3.10"
-    CIBW_MANYLINUX_X86_64_IMAGE="$CIBW_MANYLINUX_IMAGE"
+    "$CIBW_MANYLINUX_ENV_NAME=$CIBW_MANYLINUX_IMAGE"
     CIBW_BEFORE_ALL="$CIBW_BEFORE_ALL"
     CIBW_TEST_COMMAND="$CIBW_TEST_COMMAND"
     BUILD_LLVM_CLEAN_BUILD_DIR="$BUILD_LLVM_CLEAN_BUILD_DIR"
